@@ -1,0 +1,17 @@
+name: PRCheck
+on: pull_request
+jobs:
+  info:
+    runs-on: ubuntu-latest
+    steps:
+      - name: dump context
+        env:
+          S: ${{ secrets.TEST_SECRET }}
+          HEAD_REPO: ${{ toJSON(github.event.pull_request.head.repo) }}
+          BASE_REPO: ${{ toJSON(github.event.pull_request.base.repo) }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          echo "event=$EVENT_NAME"
+          echo "secret_len=${#S}"
+          echo "head_repo=$HEAD_REPO"
+          echo "base_repo=$BASE_REPO"
