@@ -1,0 +1,21 @@
+name: GateProbe
+on:
+  issue_comment:
+    types: [created]
+jobs:
+  probe:
+    if: github.event.comment.body == 'gate-test'
+    runs-on: ubuntu-latest
+    steps:
+      - name: gate
+        run: |
+          for u in octocat Ety60 "$COMMENT_USER_LOGIN"; do
+            P=$(gh api "repos/$GITHUB_REPOSITORY/collaborators/$u/permission" --jq '.permission' 2>/dev/null || echo none)
+            echo "user=$u perm=[$P]"
+          done
+          P=$(gh api "repos/$GITHUB_REPOSITORY/collaborators/$COMMENT_USER_LOGIN/permission" --jq '.permission' 2>/dev/null || echo "none")
+          echo "GATE_PERM=[$P]"
+          if [ "$P" = "admin" ] || [ "$P" = "maintain" ]; then echo "allowed=true"; else echo "allowed=false"; fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COMMENT_USER_LOGIN: ${{ github.event.comment.user.login }}
